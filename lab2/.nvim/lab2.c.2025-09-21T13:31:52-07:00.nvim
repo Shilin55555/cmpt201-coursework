@@ -1,0 +1,37 @@
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main(int argc, char* argv[]){
+
+  char input[256];
+  while(1){
+    printf("Enter programs to run.\n");
+    printf(">");
+
+    scanf("%s",input);
+    
+    pid_t pid;
+    pid = fork();
+
+    if(pid == -1){
+      perror("fork");
+      exit(EXIT_FAILURE);
+    }
+
+    if(pid){
+      int wstatus = 0;
+      waitpid(pid, &wstatus, 0);
+    }
+    else{
+      if(execl(input, input, NULL) == -1){
+        perror("execl");
+        exit(EXIT_FAILURE);
+      }
+    }
+  }
+  return 0;
+}
