@@ -1,0 +1,64 @@
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void history_append(char *history[], int n, int *recent, int *count,
+                    const char *line) {
+  history[*recent] = strdup(line);//append in arr
+  *recent = (*recent + 1) % n; //update the insert position
+  if (*count < n) {
+    (*count)++;
+  }
+}
+
+// 打印历史
+void print_n_history(char *history[], int n, int recent, int count) {
+  int start = (recent - count + n) % n; // 计算起点（最旧的数据）
+  for (int i = 0; i < count; i++) {
+    int pos = (start + i) % n;
+    printf("%s\n", history[pos]);
+  }
+}
+
+// 释放历史
+void free_history(char *history[], int n) {
+  for (int i = 0; i < n; i++) {
+    if (history[i] != NULL) {
+      free(history[i]);
+    }
+  }
+}
+
+int main() {
+  int n = 5;
+  char *history[5] = {NULL}; // 历史数组
+  char *line = NULL;
+  size_t len = 0;
+  int recent = 0; // 下一个写入位置
+  int count = 0;  // 当前历史条数
+
+  while (1) {
+    printf("Enter input: ");
+    ssize_t nread = getline(&line, &len, stdin);
+    if (nread == -1) { // Ctrl+C 或 EOF
+      break;
+    }
+    if (line[nread - 1] == '\n') {
+      line[nread - 1] = '\0'; // 去掉换行符
+    }
+
+    // 保存输入
+    history_append(history, n, &recent, &count, line);
+
+    // 如果输入是 "print"，打印历史
+    if (strcmp(line, "print") == 0) {
+      print_n_history(history, n, recent, count);
+    }
+  }
+
+  // 释放内存
+  free_history(history, n);
+  free(line);
+  return 0;
+}

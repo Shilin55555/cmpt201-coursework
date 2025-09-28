@@ -1,0 +1,16 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void read_n_history(char
+
+void print_n_history(char *history[], int n, int recent) {
+  for(i=recent; i<n; i++) {
+    printf("%s\n",history[i]);
+  }
+  for(i=0; i<recent; i++) {
+    printf("%s\n",history[i]);
+  }
+}
+

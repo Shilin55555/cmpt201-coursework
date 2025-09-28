@@ -1,0 +1,25 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void add_history(char *history[], int *count, int *index, const char *line) {
+    if (history[*index] != NULL) {
+        free(history[*index]);   // 释放旧的
+    }
+    history[*index] = strdup(line);  // 保存新输入
+
+    *index = (*index + 1) % HISTORY_SIZE;
+    if (*count < HISTORY_SIZE) {
+        (*count)++;
+    }
+}
+
+void print_n_history(char *history[], int n, int recent) {
+  for (int i = recent; i < n; i++) {
+    printf("%s\n", history[i]);
+  }
+  for (int i = 0; i < recent; i++) {
+    printf("%s\n", history[i]);
+  }
+}

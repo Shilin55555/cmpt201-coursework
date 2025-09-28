@@ -1,0 +1,57 @@
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void history_append(char *history[], int n, int *recent, const char *line) {
+  history[*recent] = strdup(line); // append in arr
+  *recent = (*recent + 1) % n;     // update the insert position
+}
+
+void print_n_history(char *history[], int n, int recent) {
+  for (int i = recent; i < n; i++) {
+    if (history[i] != NULL)
+      printf("%s\n", history[i]);
+  }
+  for (int i = 0; i < recent; i++) {
+    if (history[i] != NULL)
+      printf("%s\n", history[i]);
+  }
+}
+
+void free_history(char *history[], int n) {
+  for (int i = 0; i < n; i++) {
+    if (history[i] != NULL) {
+      free(history[i]);
+    }
+  }
+}
+
+int main() {
+  int n = 5;
+  char *history[5] = {NULL};
+  char *line = NULL;
+  size_t len = 0;
+  int recent = 0;
+
+  while (1) {
+    printf("Enter input: ");
+    ssize_t nread = getline(&line, &len, stdin);
+    if (nread == -1) {
+      break;
+    }
+    if (line[nread - 1] == '\n') { //change the last char for correct print
+      line[nread - 1] = '\0';
+    }
+
+    history_append(history, n, &recent, line);
+
+    if (strcmp(line, "print") == 0) {
+      print_n_history(history, n, recent);
+    }
+  }
+
+  free_history(history, n);
+  free(line);
+  return 0;
+}
