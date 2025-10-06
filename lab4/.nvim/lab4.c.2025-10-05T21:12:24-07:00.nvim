@@ -1,0 +1,75 @@
+#define _DEFAULT_SOURCE
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define EXTRA_SIZE 256 // extra heap size
+#define BLOCK_SIZE 128 // one block size
+#define BUF_SIZE 128   // use for write() in print_out function
+
+struct header {
+  uint64_t size;
+  struct header *next;
+};
+
+// hand error function
+void handle_error(const char *msg) {
+  perror(msg);
+  exit(EXIT_FAILURE);
+}
+
+// copy from canvas given by instructor
+void print_out(char *format, void *data, size_t data_size) {
+  char buf[BUF_SIZE];
+  ssize_t len = snprintf(buf, BUF_SIZE, format,
+                         data_size == sizeof(uint64_t) ? *(uint64_t *)data
+                                                       : *(void **)data);
+  if (len < 0)
+    handle_error("snprintf");
+  write(STDOUT_FILENO, buf, len);
+}
+
+int main() {
+  void *heap_start = sbrk(EXTRA_SIZE);
+  if (heap_start == (void *)-1) {
+    handle_error("sbrk");
+  }
+
+  // Step 2: 创建两个block
+  struct header *first = (struct header *)heap_start;
+  struct header *second = (struct header *)((char *)heap_start + BLOCK_SIZE);
+
+  // Step 3: 初始化header
+  first->size = BLOCK_SIZE;
+  first->next = NULL;
+  second->size = BLOCK_SIZE;
+  second->next = first;
+
+  // Step 4: 数据区指针
+  unsigned char *data1 = (unsigned char *)first + sizeof(struct header);
+  unsigned char *data2 = (unsigned char *)second + sizeof(struct header);
+
+  // Step 5: 初始化数据
+  memset(data1, 0, BLOCK_SIZE - sizeof(struct header));
+  memset(data2, 1, BLOCK_SIZE - sizeof(struct header));
+
+  // Step 6: 打印header信息
+  print_out("first block: %p\n", first, sizeof(first));
+  print_out("second block: %p\n", second, sizeof(second));
+  print_out("first block size: %lu\n", &first->size, sizeof(uint64_t));
+  print_out("first block next: %p\n", &first->next, sizeof(void *));
+  print_out("second block size: %lu\n", &second->size, sizeof(uint64_t));
+  print_out("second block next: %p\n", &second->next, sizeof(void *));
+
+  // Step 7: 打印数据内容
+  for (int i = 0; i < BLOCK_SIZE - sizeof(struct header); i++) {
+    printf("%d\n", data1[i]);
+  }
+  for (int i = 0; i < BLOCK_SIZE - sizeof(struct header); i++) {
+    printf("%d\n", data2[i]);
+  }
+
+  return 0;
+}
