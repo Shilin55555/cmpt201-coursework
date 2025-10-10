@@ -1,0 +1,106 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+struct header {
+  uint64_t size;
+  struct header *next;
+  int id;
+};
+
+void initialize_block(struct header *block, uint64_t size, struct header *next,
+                      int id) {
+  block->size = size;
+  block->next = next;
+  block->id = id;
+}
+
+int find_first_fit(struct header *free_list_ptr, uint64_t size) {
+  // TODO: Implement first fit
+  struct header *temp = free_list_ptr;
+  while (temp != NULL) {
+    if (temp->size >= size) {
+      return temp->id;
+    }
+    temp = temp->next;
+  }
+  return -1;
+}
+
+int find_best_fit(struct header *free_list_ptr, uint64_t size) {
+  int best_fit_id = -1;
+  // TODO: Implement best fit
+  struct header *temp = free_list_ptr;
+  uint64_t best = UINT64_MAX;
+  while (temp != NULL) {
+    if ((temp->size >= size) && (best > temp->size)) {
+      best = temp->size;
+      best_fit_id = temp->id;
+    }
+    temp = temp->next;
+  }
+  return best_fit_id;
+}
+
+int find_worst_fit(struct header *free_list_ptr, uint64_t size) {
+  int worst_fit_id = -1;
+  // TODO: Implement worst fit
+  struct header *temp = free_list_ptr;
+  uint64_t worst = 0;
+  while (temp != NULL) {
+    if ((temp->size >= size) && (worst < temp->size)) {
+      worst = temp->size;
+      worst_fit_id = temp->id;
+    }
+    temp = temp->next;
+  }
+  return worst_fit_id;
+}
+
+int main(void) {
+
+  struct header *free_block1 = (struct header *)malloc(sizeof(struct header));
+  struct header *free_block2 = (struct header *)malloc(sizeof(struct header));
+  struct header *free_block3 = (struct header *)malloc(sizeof(struct header));
+  struct header *free_block4 = (struct header *)malloc(sizeof(struct header));
+  struct header *free_block5 = (struct header *)malloc(sizeof(struct header));
+
+  initialize_block(free_block1, 6, free_block2, 1);
+  initialize_block(free_block2, 12, free_block3, 2);
+  initialize_block(free_block3, 24, free_block4, 3);
+  initialize_block(free_block4, 8, free_block5, 4);
+  initialize_block(free_block5, 4, NULL, 5);
+
+  struct header *free_list_ptr = free_block1;
+
+  int first_fit_id = find_first_fit(free_list_ptr, 7);
+  int best_fit_id = find_best_fit(free_list_ptr, 7);
+  int worst_fit_id = find_worst_fit(free_list_ptr, 7);
+
+  // TODO: Print out the IDs
+  printf("The ID for First-Fit algorithm is: %d\n", first_fit_id);
+  printf("The ID for Best-Fit algorithm is: %d\n", best_fit_id);
+  printf("The ID for Worst-Fit algorithm is: %d\n", worst_fit_id);
+
+  // free the memory
+  struct header *temp = free_list_ptr;
+  while (free_list_ptr != NULL) {
+    temp = free_list_ptr;
+    free_list_ptr = free_list_ptr->next;
+    free(temp);
+  }
+  return 0;
+}
+// pseudo code
+// void coalescing(struct header* temp, new) {
+//  while this block is not NULL and next one is not NULL
+//    if next is adjacent with this
+//      change this size to this plus next
+//      change this next to the next of next
+//    if new is adjacent with this
+//      change this size yo this plus next
+//      change this pointer to new pointer if new is lower
+//      set new to NULL
+//    goes to next block
+//  end while
+//  return
